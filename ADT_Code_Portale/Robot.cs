@@ -10,39 +10,54 @@ namespace ADT_Code_Portale
     {
         public int Id { get; set; }
         SemaphoreSlim s_TakePieces;
+        SemaphoreSlim s_Build;
         public MyQueue<Component> Queue { get; set; }
 
         SemaphoreSlim mutexQueue;
 
-        CancellationToken Ct;
-        public Robot(int id, SemaphoreSlim s, CancellationToken ct, MyQueue<Component> queue, SemaphoreSlim mutex)
+        int N_PRODUCED_COMPONENTS = 0;
+        int MAX_COUNT;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        public Robot(int id, SemaphoreSlim s, SemaphoreSlim s2, MyQueue<Component> queue, SemaphoreSlim mutex, int max_count)
         {
             Id = id;
             s_TakePieces = s;
+            s_Build = s2;
             Queue = queue;
             mutexQueue = mutex;
-            Ct = ct;
+            MAX_COUNT = max_count;
         }
 
         public async Task TakePiecesAsync()
         {
-            while(!Ct.IsCancellationRequested)
+            while(true)
             {
                 await s_TakePieces.WaitAsync();
-                
+
+                int current = Interlocked.Increment(ref N_PRODUCED_COMPONENTS);
+
+                if (current > MAX_COUNT)
+                {
+                    s_TakePieces.Release();
+                    break;
+                }
+
                 Component c = new Component($"COMPONENTE -N{Id}-");
 
-                Console.WriteLine($"{this.Id} ha preso il pezzo {c.Name}");
-                Console.WriteLine($"{this.Id} sta spostando il pezzo . . . ");
+                Console.WriteLine($"ROBOT#{this.Id} ha preso il pezzo {c.Name}");
+                Console.WriteLine($"ROBOT#{this.Id} sta spostando il pezzo . . . ");
                 await Task.Delay(200);
 
                 await mutexQueue.WaitAsync();
                 Queue.Enqueue(c);
                 mutexQueue.Release();
 
-                Console.WriteLine($"{this.Id} ha posizionato il pezzo {c.Name} nella coda");
+                Console.WriteLine($"ROBOT#{this.Id} ha posizionato il pezzo {c.Name} nella coda");
 
-                s_TakePieces.Release();
+                s_Build.Release();
             }
         }
     }
