@@ -15,9 +15,9 @@ namespace ADT_Code_Portale
             List<Task> dinosaurs = new();
             List<Task> robots = new();
 
-            int N_DINOSAURS = 5;
-            int N_ROBOTS = 5;
-            int N_COMPONENTS = 20;
+            int N_DINOSAURS = 2;
+            int N_ROBOTS = 2;
+            int N_COMPONENTS = 12;
 
             SemaphoreSlim s_TakePieces = new(N_COMPONENTS, N_COMPONENTS);
             SemaphoreSlim mutex = new(1, 1);

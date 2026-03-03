@@ -19,8 +19,9 @@ namespace ADT_Code_Portale
         SemaphoreSlim mutexStack = new(1, 1);
 
         int MAX_HEIGHT;
+        int N_ELEMENT = 0;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         public Dinosaur(string name, SemaphoreSlim s, SemaphoreSlim s2, MyQueue<Component> queue, SemaphoreSlim mutex, int max_height = 5)
         {
@@ -48,7 +49,18 @@ namespace ADT_Code_Portale
                 await Task.Delay(300);
 
                 await mutexStack.WaitAsync();
+                if (N_ELEMENT == MAX_HEIGHT)
+                {
+                    stack.Clear();
+
+                    Console.WriteLine($"{this.Name} ha concluso il pezzo e svuota lo STACK");
+
+                    Interlocked.Exchange(ref N_ELEMENT, 0);
+                }
+
                 stack.Push(c);
+
+                Interlocked.Increment(ref N_ELEMENT);
                 mutexStack.Release();
 
                 Console.WriteLine($"{this.Name} ha posizionato il pezzo {c.Name} nello stack");
